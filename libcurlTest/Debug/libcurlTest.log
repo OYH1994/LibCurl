@@ -1,4 +1,4 @@
-﻿生成启动时间为 2019/7/30 星期二 17:31:27。
+﻿生成启动时间为 2019/8/6 星期二 14:11:23。
      1>项目“E:\C++\libcurlTest\libcurlTest\libcurlTest.vcxproj”在节点 2 上(Build 个目标)。
      1>ClCompile:
          D:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I./curl /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _WINDOWS /D _CRT_SECURE_NO_WARNINGS /D BUILDING_LIBCURL /D HTTP_ONLY /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt "源.cpp"
@@ -10,4 +10,4 @@
 
 生成成功。
 
-已用时间 00:00:01.98
+已用时间 00:00:02.09

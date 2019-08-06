@@ -7,6 +7,11 @@
 #pragma comment(lib, "libcurl.lib")
 
 using namespace std;
+
+typedef unsigned int uint;
+typedef	PVOID pvoid;
+
+
 std::string f_utf8togbk(const char *szUtf8)
 {
 	std::string result;
@@ -98,13 +103,79 @@ bool f_post(const string &strUrl,const string &strPost,string &strResponse)
 	return 1;
 }
 
+uint f_wtfile(pvoid p_buf, uint n_buf, uint n_ret, pvoid p_ret)
+{
+	return fwrite(p_buf, n_buf, n_ret, (FILE*)p_ret);
+}
+
+LPCWSTR stringToLPCWSTR(string orig)
+{
+	size_t origsize = orig.length() + 1;
+	const size_t newsize = 100;
+	size_t convertedChars = 0;
+	wchar_t *wcstring = (wchar_t *)malloc(sizeof(wchar_t)*(orig.length() - 1));
+	mbstowcs_s(&convertedChars, wcstring, origsize, orig.c_str(), _TRUNCATE);
+	return wcstring;
+}
+
+bool f_download(const string & strUrl, const string & strLocalPath)
+{
+	int n_eid = CURLE_OK;
+	bool b_ret = false;
+	do
+	{
+		CURL* pcurl = curl_easy_init();
+		if (!pcurl)
+			break;
+
+		FILE* pf;
+		pf = fopen(strLocalPath.c_str(), "wb");
+		if (pf == NULL)
+		{
+			perror(NULL);
+			break;
+		}
+
+		curl_easy_setopt(pcurl, CURLOPT_SSL_VERIFYPEER, false); //设定为不验证证书和HOST
+		curl_easy_setopt(pcurl, CURLOPT_SSL_VERIFYHOST, false);
+
+		curl_easy_setopt(pcurl, CURLOPT_URL, strUrl.c_str()); // 下载地址
+		curl_easy_setopt(pcurl, CURLOPT_CONNECTTIMEOUT, 5); // 设置连接超时，单位秒
+		curl_easy_setopt(pcurl, CURLOPT_WRITEDATA, pf);
+		curl_easy_setopt(pcurl, CURLOPT_WRITEFUNCTION, f_wtfile);
+		curl_easy_setopt(pcurl, CURLOPT_VERBOSE, 1L);
+		n_eid = curl_easy_perform(pcurl);
+		fclose(pf);
+
+		if (CURLE_OK != n_eid)
+		{
+			curl_easy_cleanup(pcurl);
+			::DeleteFile(stringToLPCWSTR(strLocalPath));
+			break;
+		}
+
+		long n_code = 0;
+		n_eid = curl_easy_getinfo(pcurl, CURLINFO_RESPONSE_CODE, &n_code);
+		if (n_eid != CURLE_OK || n_code != 200)
+		{
+			curl_easy_cleanup(pcurl);
+			DeleteFile(stringToLPCWSTR(strLocalPath));
+			break;
+		}
+
+		curl_easy_cleanup(pcurl);
+		b_ret = true;
+	} while (0);
+	return b_ret;
+}
+
 int main()
 {
-	string getUrl = "http://pk.uuuwin.com/ad/channel/sd";
+	/*string getUrl = "http://pk.uuuwin.com/ad/channel/sd";
 	string getstrRespose = "";
 	f_get(getUrl, getstrRespose);
 	string strgetGBK = f_utf8togbk(getstrRespose.c_str());
-	cout << strgetGBK << endl;
+	cout << strgetGBK << endl;*/
 
 	/*string postUrl = "http://pk.uuuwin.com/static/ad/bar/299442";
 	string postStrRespose = "";
@@ -112,5 +183,8 @@ int main()
 	string strpostGBK = f_utf8togbk(postStrRespose.c_str());
 	cout << strpostGBK << endl;*/
 
+	string downloadUrl = "https://ws3.sinaimg.cn/large/005BYqpgly1g0nbuom4hhj303202sq2u.jpg";
+	string strLocalPath = "E:\\C++\\libcurlTest\\libcurlTest\\Debug\\202.png";
+	f_download(downloadUrl,strLocalPath);
 	system("pause");
 }
